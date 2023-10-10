@@ -31,6 +31,7 @@ The following variables are available for use in your templates:
 
 - `flavor` (string): The name of the flavor being templated. Possible values: `latte`, `frappé`, `macchiato`, `mocha`.
 - `isLight` (bool): True if `flavor` is `latte`, false otherwise.
+- `isDark` (bool): True unless `flavor` is `latte`.
 - All named colors in the flavor, such as `red`, `subtext0`, and `crust`. A full list of named colors can be found [here](https://github.com/catppuccin/rust/blob/5124eb99eb98d7111dca24537d428a6078e5bbb6/src/flavour.rs#L41-L66). Each color has the following properties:
     - `name` (string): The name of the color.
     - `hsl` (string): The color in CSS HSL format (`hsl(343, 81%, 75%)`)

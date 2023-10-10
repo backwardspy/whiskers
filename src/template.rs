@@ -65,6 +65,7 @@ pub fn make_context(flavor: catppuccin::Flavour) -> Result<serde_json::Value> {
 
     context["flavor"] = flavor.name().into();
     context["isLight"] = (flavor == catppuccin::Flavour::Latte).into();
+    context["isDark"] = (flavor != catppuccin::Flavour::Latte).into();
 
     Ok(context)
 }
