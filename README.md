@@ -128,3 +128,8 @@ Any and all feedback is appreciated, especially on the following topics:
     - `isLight`/`isLatte` flag (former exists)
     - Other options?
 - Available helpers for common port creation needs
+
+## Wishlist
+
+- Color overrides option for CLI
+    - e.g. `--overrides '{"base": "#000000"}'`
