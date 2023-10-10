@@ -133,3 +133,5 @@ Any and all feedback is appreciated, especially on the following topics:
 
 - Color overrides option for CLI
     - e.g. `--overrides '{"base": "#000000"}'`
+- Combined operation mode, for example setting flavor to `all` and having all four flavors available in the template context.
+- Swap out [`css-colors`](https://github.com/vaidehijoshi/css-colors) colour operations for something else (maybe [`farver`](https://github.com/nyxkrage/farver)), ideally with a better colour model.
