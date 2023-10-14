@@ -12,7 +12,7 @@ fn format_color_string_with<F>(color_string: &str, formatter: F) -> String
 where
     F: FnOnce(css_colors::HSLA, format::ColorModel) -> String,
 {
-    parse::color(color_string).map_or_else(
+    color_string.parse::<parse::Color>().map_or_else(
         |err| {
             eprintln!("Warning: Failed to parse color string '{color_string}': {err}");
             color_string.to_string()
@@ -79,3 +79,4 @@ pub fn darklight(
 
     Ok(())
 }
+
