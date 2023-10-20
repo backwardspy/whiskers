@@ -10,6 +10,7 @@
 mod format;
 mod helper;
 mod parse;
+mod postprocess;
 mod template;
 
 use std::{collections::HashMap, fs, path::PathBuf};
@@ -17,6 +18,8 @@ use std::{collections::HashMap, fs, path::PathBuf};
 use clap::Parser;
 use color_eyre::{eyre::eyre, Result};
 use yaml_front_matter::YamlFrontMatter;
+
+use postprocess::postprocess;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
 enum Flavor {
@@ -79,6 +82,7 @@ fn main() -> Result<()> {
     let ctx = template::merge_user_context(ctx, user_ctx)?;
 
     let result = reg.render_template(&document.content, &ctx)?;
+    let result = postprocess(&result)?;
     println!("{result}");
 
     Ok(())

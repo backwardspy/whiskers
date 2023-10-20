@@ -1,3 +1,4 @@
+use base64::Engine;
 use css_colors::{Color, Ratio};
 use handlebars::{
     handlebars_helper, Context, Handlebars, Helper, HelperResult, Output, RenderContext,
@@ -5,6 +6,7 @@ use handlebars::{
 };
 
 use ::titlecase::titlecase as titlecase_ext;
+use serde_json::Value;
 
 use crate::{format, parse};
 
@@ -80,3 +82,8 @@ pub fn darklight(
     Ok(())
 }
 
+handlebars_helper!(unquote: |value: Value| {
+    let content = serde_json::to_string(&value)?;
+    let content = base64::engine::general_purpose::STANDARD_NO_PAD.encode(content);
+    format!("{{WHISKERS:UNQUOTE:{content}}}")
+});

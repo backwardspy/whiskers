@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2023-10-20
+
+### Features
+
+- Add post-processing step after templating
+
 ## [0.2.1] - 2023-10-18
 
 ### Miscellaneous Tasks

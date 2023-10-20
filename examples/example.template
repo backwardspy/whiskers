@@ -16,3 +16,5 @@ red:                #{{ red.hex }} / {{ red.rgb }} / {{ red.hsl }}
 50% opacity:        #{{ opacity red.hexa 0.5}} / {{ opacity red.rgba 0.5 }} / {{ opacity red.hsla 0.5 }}
 
 this is a {{ darklight "dark" "light" }} theme
+
+unquote this: "{{ unquote isLight }}"

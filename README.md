@@ -65,6 +65,8 @@ The following custom helpers are available:
     - `{{ mix red.hex base.hex 0.3 }}` → `5E4054` (30% red, 70% base)
 - `opacity color amount` : Sets a color's opacity.
     - `{{ opacity red.hsla 0.5 }}` → `hsla(343, 81%, 75%, 0.50)`
+- `unquote value`: Marks a value to be unquoted. Mostly useful for maintaining JSON syntax highlighting in template files when a non-string value is needed.
+    - `"{{ unquote isLight }}"` → `true` (the surrounding quote marks have been removed)
 - `darklight dark light` : Chooses a value depending on the set flavor. Latte is light, while Frappé, Macchiato, and Mocha are all dark.
     - `{{ darklight "Night", "Day" }}` → `Day` on Latte, `Night` on other flavors.
 
@@ -101,21 +103,21 @@ Values in YAML frontmatter are rendered in the same way as the rest of the templ
 accent: '#{{ mauve.hex }}'
 darkGreen: '#{{ darken green.hex 0.3 }}'
 ---
-bg = #{{ base.hex }}
-fg = #{{ text.hex }}
-border = {{ accent }}
-diffAddFg = #{{ green.hex }}
-diffAddBg = {{ darkGreen }}
+bg = "#{{ base.hex }}"
+fg = "#{{ text.hex }}"
+border = "{{ accent }}"
+diffAddFg = "#{{ green.hex }}"
+diffAddBg = "{{ darkGreen }}"
 ```
 
 Rendering the above template produces the following output:
 
 ```ini
-bg = #1E1E2E
-fg = #CDD6F4
-border = #CBA6F7
-diffAddFg = #A6E3A1
-diffAddBg = #40B436
+bg = "#1E1E2E"
+fg = "#CDD6F4"
+border = "#CBA6F7"
+diffAddFg = "#A6E3A1"
+diffAddBg = "#40B436"
 ```
 
 ## Opinions
@@ -123,10 +125,6 @@ diffAddBg = #40B436
 Any and all feedback is appreciated, especially on the following topics:
 
 - Frontmatter support
-- Easing support for darkmode/lightmode
-    - `darklight` helper (exists)
-    - `isLight`/`isLatte` flag (former exists)
-    - Other options?
 - Available helpers for common port creation needs
 
 ## Wishlist
