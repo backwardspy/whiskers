@@ -16,7 +16,9 @@ mod template;
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use clap::Parser;
-use color_eyre::{eyre::eyre, Result};
+use color_eyre::Result;
+use handlebars::Handlebars;
+use serde_json::Value;
 use yaml_front_matter::YamlFrontMatter;
 
 use postprocess::postprocess;
@@ -50,24 +52,18 @@ struct Args {
 
 type Frontmatter = HashMap<String, String>;
 
-fn main() -> Result<()> {
-    color_eyre::config::HookBuilder::default()
-        .panic_section("Consider reporting this issue: https://github.com/catppuccin/toolbox")
-        .display_env_section(false)
-        .install()?;
+fn try_get_frontmatter(template: &str) -> (String, Option<Frontmatter>) {
+    match YamlFrontMatter::parse::<Frontmatter>(template) {
+        Ok(doc) => (doc.content, Some(doc.metadata)),
+        Err(e) => {
+            eprintln!("Template has no valid frontmatter ({e}).");
+            (template.to_string(), None)
+        }
+    }
+}
 
-    let args = Args::parse();
-    let tpl = fs::read_to_string(args.template_path)?;
-
-    let document = YamlFrontMatter::parse::<Frontmatter>(&tpl)
-        .map_err(|e| eyre!("Failed to parse YAML front matter: {}", e))?;
-
-    let reg = template::make_registry();
-    let ctx = template::make_context(args.flavor.into())?;
-
-    // render frontmatter values as templates
-    let user_ctx: Frontmatter = document
-        .metadata
+fn render_frontmatter(frontmatter: Frontmatter, ctx: &Value, reg: &Handlebars) -> Frontmatter {
+    frontmatter
         .into_iter()
         .map(|(k, v)| {
             (
@@ -78,10 +74,39 @@ fn main() -> Result<()> {
                 }),
             )
         })
-        .collect();
-    let ctx = template::merge_user_context(ctx, user_ctx)?;
+        .collect::<Frontmatter>()
+}
 
-    let result = reg.render_template(&document.content, &ctx)?;
+fn make_context(
+    flavor: Flavor,
+    reg: &Handlebars,
+    frontmatter: Option<Frontmatter>,
+) -> Result<Value> {
+    let mut ctx = template::make_context(flavor.into())?;
+
+    // render frontmatter values as templates
+    if let Some(frontmatter) = frontmatter {
+        let user_ctx = render_frontmatter(frontmatter, &ctx, reg);
+        ctx = template::merge_user_context(ctx, user_ctx)?;
+    }
+
+    Ok(ctx)
+}
+
+fn main() -> Result<()> {
+    color_eyre::config::HookBuilder::default()
+        .panic_section("Consider reporting this issue: https://github.com/catppuccin/toolbox")
+        .display_env_section(false)
+        .install()?;
+
+    let args = Args::parse();
+    let tpl = fs::read_to_string(args.template_path)?;
+
+    let reg = template::make_registry();
+
+    let (content, frontmatter) = try_get_frontmatter(&tpl);
+    let ctx = make_context(args.flavor, &reg, frontmatter)?;
+    let result = reg.render_template(&content, &ctx)?;
     let result = postprocess(&result)?;
     println!("{result}");
 
