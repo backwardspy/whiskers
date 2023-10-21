@@ -1,5 +1,4 @@
 use base64::Engine;
-use color_eyre::Result;
 
 struct UnquoteReplacer;
 impl regex::Replacer for UnquoteReplacer {
@@ -16,8 +15,9 @@ impl regex::Replacer for UnquoteReplacer {
     }
 }
 
-pub fn postprocess(input: &str) -> Result<String> {
-    let pattern = regex::Regex::new(r#""\{WHISKERS:UNQUOTE:(?<b64>.*)}""#)?;
+pub fn postprocess(input: &str) -> String {
+    let pattern = regex::Regex::new(r#""\{WHISKERS:UNQUOTE:(?<b64>.*)}""#).expect("regex is valid");
     let result = pattern.replace_all(input, UnquoteReplacer).to_string();
-    Ok(result)
+    result
 }
+

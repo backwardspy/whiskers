@@ -1,10 +1,4 @@
-#![warn(
-    clippy::all,
-    clippy::pedantic,
-    clippy::nursery,
-    clippy::unwrap_used,
-    clippy::expect_used
-)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::unwrap_used)]
 #![allow(clippy::cast_possible_truncation)] // we like truncating u32s into u8s around here
 
 mod format;
@@ -16,7 +10,7 @@ mod template;
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use clap::Parser;
-use color_eyre::Result;
+use color_eyre::{eyre::Context, Result};
 use handlebars::Handlebars;
 use serde_json::Value;
 use yaml_front_matter::YamlFrontMatter;
@@ -100,14 +94,27 @@ fn main() -> Result<()> {
         .install()?;
 
     let args = Args::parse();
-    let tpl = fs::read_to_string(args.template_path)?;
+    let tpl = fs::read_to_string(&args.template_path).wrap_err(format!(
+        "Failed to read template file '{}'",
+        args.template_path.display()
+    ))?;
 
-    let reg = template::make_registry();
+    let mut reg = template::make_registry();
+
+    let template_name = args
+        .template_path
+        .file_name()
+        .and_then(|p| p.to_str())
+        .unwrap_or("unnamed template");
 
     let (content, frontmatter) = try_get_frontmatter(&tpl);
     let ctx = make_context(args.flavor, &reg, frontmatter)?;
-    let result = reg.render_template(&content, &ctx)?;
-    let result = postprocess(&result)?;
+    reg.register_template_string(template_name, content)
+        .wrap_err("Failed to parse template")?;
+    let result = reg
+        .render(template_name, &ctx)
+        .wrap_err("Failed to render template")?;
+    let result = postprocess(&result);
     println!("{result}");
 
     Ok(())

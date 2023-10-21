@@ -57,7 +57,7 @@ impl FromStr for Color {
             Self::parse_hexa,
             Self::parse_hex,
         ))(s)
-        .map_err(|e| eyre!("{e}"))?;
+        .map_err(|e| eyre!(e.to_owned()))?;
         Ok(result)
     }
 }
