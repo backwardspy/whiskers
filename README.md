@@ -135,10 +135,40 @@ diffaddfg = "#a6e3a1"
 diffaddbg = "#40b436"
 ```
 
+## Overrides
+
+whiskers supports overriding individual template values without changing the underlying template source. To use this, pass the `--override` flag to the whiskers CLI. You can use the `--override` flag multiple times to apply multiple overrides.
+
+For example, with this template:
+```handlebars
+---
+accent: '{{ mauve }}'
+---
+bg = "#{{ base }}"
+fg = "#{{ text }}"
+border = "#{{ accent }}"
+diffAddFg = "#{{ green }}"
+```
+And no overrides passed, we get:
+```ini
+bg = "#1e1e2e"
+fg = "#cdd6f4"
+border = "#cba6f7"
+diffAddFg = "#a6e3a1"
+```
+However, we can pass overrides through the CLI:
+
+`whiskers --override accent=40b436`
+
+Then, we get:
+```ini
+bg = "#1e1e2e"
+fg = "#cdd6f4"
+border = "#40b436"
+diffAddFg = "#a6e3a1"
+```
+
 ## Wishlist
 
-- Color overrides option for CLI
-  - e.g. `--overrides '{"base": "#000000"}'`
-  - #2
 - Combined operation mode, for example setting flavor to `all` and having all four flavors available in the template context.
 - Swap out [`css-colors`](https://github.com/vaidehijoshi/css-colors) colour operations for something else (maybe [`farver`](https://github.com/nyxkrage/farver)), ideally with a better colour model.
