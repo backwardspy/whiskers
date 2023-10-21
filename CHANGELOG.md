@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2023-10-21
+
+### Bug Fixes
+
+- Don't crash when template has no frontmatter
+
 ## [0.3.0] - 2023-10-20
 
 ### Features
