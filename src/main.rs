@@ -36,7 +36,7 @@ struct Override {
     pub value: String,
 }
 
-fn override_parser(s: &str) -> Result<Override> {
+fn parse_override(s: &str) -> Result<Override> {
     let kvpair = s.split_once('=');
     if let Some((key, value)) = kvpair {
         return Ok(Override {
@@ -57,8 +57,8 @@ struct Args {
     #[arg(value_enum, required_unless_present = "list_helpers")]
     flavor: Option<Flavor>,
 
-    /// Template context variable to override in key=value format
-    #[arg(long("override"), value_parser(override_parser))]
+    /// The overrides to apply to the template in key=value format
+    #[arg(long("override"), value_parser(parse_override))]
     overrides: Vec<Override>,
 
     /// List all template helpers in markdown format
