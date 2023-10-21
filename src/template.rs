@@ -31,6 +31,9 @@ pub fn make_registry() -> Handlebars<'static> {
     reg.register_helper("mix", Box::new(helper::mix));
     reg.register_helper("opacity", Box::new(helper::opacity));
     reg.register_helper("unquote", Box::new(helper::unquote));
+    reg.register_helper("red", Box::new(helper::red));
+    reg.register_helper("green", Box::new(helper::green));
+    reg.register_helper("blue", Box::new(helper::blue));
     reg.register_helper("darklight", Box::new(helper::darklight));
     reg.set_strict_mode(true);
     reg

@@ -58,6 +58,18 @@ handlebars_helper!(mix: |a: String, b: String, t: f32| {
 handlebars_helper!(opacity: |color: String, amount: f32| {
     format_color_string(&color, |hsl| hsl.fade(Ratio::from_f32(amount)))
 });
+handlebars_helper!(red: |color: String| {
+    let color: parse::Color = color.parse().map_err(|e: color_eyre::Report| RenderError::new(e.to_string()))?;
+    color.red()
+});
+handlebars_helper!(green: |color: String| {
+    let color: parse::Color = color.parse().map_err(|e: color_eyre::Report| RenderError::new(e.to_string()))?;
+    color.green()
+});
+handlebars_helper!(blue: |color: String| {
+    let color: parse::Color = color.parse().map_err(|e: color_eyre::Report| RenderError::new(e.to_string()))?;
+    color.blue()
+});
 
 pub fn darklight(
     h: &Helper,

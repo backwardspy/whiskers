@@ -4,7 +4,7 @@ use color_eyre::{
     eyre::{eyre, ErrReport},
     Result,
 };
-use css_colors::Ratio;
+use css_colors::{Color as CssColor, Ratio};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while_m_n},
@@ -107,6 +107,27 @@ impl Color {
                 Ratio::from_u8(alpha).as_f32(),
             )),
         ))
+    }
+
+    fn to_rgb(&self) -> css_colors::RGB {
+        match self {
+            Self::Hsl(hsl) => hsl.to_rgb(),
+            Self::Hsla(hsla) => hsla.to_rgb(),
+            Self::Rgb(rgb) | Self::Hex(rgb) => *rgb,
+            Self::Rgba(rgba) | Self::Hexa(rgba) => rgba.to_rgb(),
+        }
+    }
+
+    pub fn red(&self) -> u8 {
+        self.to_rgb().r.as_u8()
+    }
+
+    pub fn green(&self) -> u8 {
+        self.to_rgb().g.as_u8()
+    }
+
+    pub fn blue(&self) -> u8 {
+        self.to_rgb().b.as_u8()
     }
 }
 

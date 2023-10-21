@@ -67,8 +67,17 @@ The following custom helpers are available:
     - `{{ opacity red.hsla 0.5 }}` → `hsla(343, 81%, 75%, 0.50)`
 - `unquote value`: Marks a value to be unquoted. Mostly useful for maintaining JSON syntax highlighting in template files when a non-string value is needed.
     - `"{{ unquote isLight }}"` → `true` (the surrounding quote marks have been removed)
+- `red color` : Gets the red channel of a color.
+    - `{{ red (darken teal 0.5) }}` → `25`
+- `green color` : Gets the green channel of a color.
+    - `{{ green (darken teal 0.5) }}` → `93`
+- `blue color` : Gets the blue channel of a color.
+    - `{{ blue (darken teal 0.5) }}` → `82`
 - `darklight dark light` : Chooses a value depending on the set flavor. Latte is light, while Frappé, Macchiato, and Mocha are all dark.
     - `{{ darklight "Night", "Day" }}` → `Day` on Latte, `Night` on other flavors.
+
+> [!NOTE]
+> The `red`, `green`, and `blue` helpers exist to fetch their respective color channel from a color that has already been formatted. If you're using a named color object, you can just use `<name>.r`, `<name>.g`, and `<name>.b` directly to achieve the same thing.
 
 ## Frontmatter
 
