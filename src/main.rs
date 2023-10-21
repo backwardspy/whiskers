@@ -2,7 +2,10 @@
 #![allow(clippy::cast_possible_truncation)] // we like truncating u32s into u8s around here
 use clap::Parser;
 use clap_stdin::FileOrStdin;
-use color_eyre::{eyre::Context, Result};
+use color_eyre::{
+    eyre::{eyre, Context},
+    Result,
+};
 
 use whiskers::frontmatter;
 use whiskers::postprocess::postprocess;
@@ -27,6 +30,23 @@ impl From<Flavor> for catppuccin::Flavour {
     }
 }
 
+#[derive(Clone, Debug)]
+struct Override {
+    pub key: String,
+    pub value: String,
+}
+
+fn override_parser(s: &str) -> Result<Override> {
+    let kvpair = s.split_once('=');
+    if let Some((key, value)) = kvpair {
+        return Ok(Override {
+            key: key.trim().to_string(),
+            value: value.trim().parse()?,
+        });
+    }
+    Err(eyre!("invalid override, expected 'key=value', got '{}'", s))
+}
+
 #[derive(clap::Parser, Debug)]
 struct Args {
     /// Path to the template file to render, or `-` for stdin
@@ -37,9 +57,20 @@ struct Args {
     #[arg(value_enum, required_unless_present = "list_helpers")]
     flavor: Option<Flavor>,
 
+    /// Template context variable to override in key=value format
+    #[arg(long("override"), value_parser(override_parser))]
+    overrides: Vec<Override>,
+
     /// List all template helpers in markdown format
     #[arg(short, long)]
     list_helpers: bool,
+}
+
+fn overrides_to_map(overrides: &[Override]) -> serde_json::Map<String, serde_json::Value> {
+    overrides
+        .iter()
+        .map(|o| (o.key.clone(), serde_json::Value::String(o.value.clone())))
+        .collect()
 }
 
 fn main() -> Result<()> {
@@ -66,12 +97,14 @@ fn main() -> Result<()> {
     let mut ctx = template::make_context(flavor.into());
     let (content, frontmatter) = frontmatter::render_and_parse(template, &reg, &ctx);
     if let Some(frontmatter) = frontmatter {
-        ctx.as_object_mut().expect("ctx is an object value").extend(
+        let ctx = ctx.as_object_mut().expect("ctx is an object value");
+        ctx.extend(
             frontmatter
                 .as_object()
                 .expect("frontmatter is an object value")
                 .clone(),
         );
+        ctx.extend(overrides_to_map(&args.overrides));
     }
 
     let result = reg
