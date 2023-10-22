@@ -19,6 +19,7 @@ impl From<crate::parse::Error> for RenderError {
 handlebars_helper!(uppercase: |s: String| s.to_uppercase());
 handlebars_helper!(lowercase: |s: String| s.to_lowercase());
 handlebars_helper!(titlecase: |s: String| titlecase_ext(&s));
+handlebars_helper!(trunc: |number: f32, places: usize| format!("{number:.places$}"));
 handlebars_helper!(lighten: |color: String, weight: f32| {
     HSLA::from_hex(&color)?.lighten(Ratio::from_f32(weight)).to_hex()
 });

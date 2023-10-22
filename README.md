@@ -9,17 +9,18 @@ Soothing port creation tool for the high-spirited!
 
 ```console
 $ whiskers --help
-Usage: whiskers <TEMPLATE_PATH> <FLAVOR>
+Usage: whiskers [OPTIONS] [TEMPLATE_PATH] [FLAVOR]
 
 Arguments:
-  <TEMPLATE_PATH>  
-  <FLAVOR>      [possible values: latte, frappe, macchiato, mocha]
+  [TEMPLATE_PATH]
+  [FLAVOR]         [possible values: latte, frappe, macchiato, mocha]
 
 Options:
-  -h, --help  Print help
+  -l, --list-helpers
+  -h, --help          Print help
 ```
 
-See [the example template](examples/example.template) for a starting point, and read on for more details.
+See [the example template](examples/example.hbs) for a starting point, and read on for more details.
 
 ## Template Syntax
 
@@ -32,52 +33,57 @@ The following variables are available for use in your templates:
 - `flavor` (string): The name of the flavor being templated. Possible values: `latte`, `frappé`, `macchiato`, `mocha`.
 - `isLight` (bool): True if `flavor` is `latte`, false otherwise.
 - `isDark` (bool): True unless `flavor` is `latte`.
-- All named colors in the flavor, such as `red`, `subtext0`, and `crust`. A full list of named colors can be found [here](https://github.com/catppuccin/rust/blob/5124eb99eb98d7111dca24537d428a6078e5bbb6/src/flavour.rs#L41-L66). Each color has the following properties:
-    - `name` (string): The name of the color.
-    - `hsl` (string): The color in CSS HSL format (`hsl(343, 81%, 75%)`)
-    - `hsla` (string): The color in CSS HSLA format (`hsla(343, 81%, 75%, 1.0)`)
-    - `rgb` (string): The color in CSS RGB format (`rgb(243, 139, 168)`)
-    - `rgba` (string): The color in CSS RGBA format (`rgba(243, 139, 168, 1.0)`)
-    - `hex` (string): The color in 6-digit hexadecimal format (`#F38BA8`)
-    - `hexa` (string): The color in 8-digit hexadecimal format (`#F38BA8FF`)
-    - `r` (int): The red component of the color (0-255).
-    - `g` (int): The green component of the color (0-255).
-    - `b` (int): The blue component of the color (0-255).
+- All named colors in the flavor, such as `red`, `subtext0`, and `crust`. A full list of named colors can be found [here](https://github.com/catppuccin/rust/blob/5124eb99eb98d7111dca24537d428a6078e5bbb6/src/flavour.rs#L41-L66). Each color is formatted as hex by default.
 - All frontmatter variables as described in the [Frontmatter](#frontmatter) section.
 
 ### Helpers
 
 The following custom helpers are available:
 
-- `uppercase string` : Converts a string to uppercase.
+- `uppercase string` : Convert a string to uppercase.
     - `{{ uppercase "hello" }}` → `HELLO`
-- `lowercase string` : Converts a string to lowercase.
+- `lowercase string` : Convert a string to lowercase.
     - `{{ lowercase "HELLO" }}` → `hello`
-- `titlecase string` : Converts a string to titlecase.
+- `titlecase string` : Convert a string to titlecase.
     - `{{ titlecase "hello there" }}` → `Hello There`
-- `lighten color amount` : Lightens a color by a percentage.
-    - `{{ lighten red.hex 0.1 }}` → `F8BACC`
-    - `{{ lighten red.hsl 0.1 }}` → `hsl(343, 81%, 85%)`
-- `darken color amount` : Darkens a color by a percentage.
-    - `{{ darken red.hex 0.1 }}` → `EE5C85`
-    - `{{ darken red.hsl 0.1 }}` → `hsl(343, 81%, 65%)`
-- `mix color_a color_b ratio` : Mixes two colors together with a given ratio.
-    - `{{ mix red.hex base.hex 0.3 }}` → `5E4054` (30% red, 70% base)
-- `opacity color amount` : Sets a color's opacity.
-    - `{{ opacity red.hsla 0.5 }}` → `hsla(343, 81%, 75%, 0.50)`
-- `unquote value`: Marks a value to be unquoted. Mostly useful for maintaining JSON syntax highlighting in template files when a non-string value is needed.
-    - `"{{ unquote isLight }}"` → `true` (the surrounding quote marks have been removed)
-- `red color` : Gets the red channel of a color.
-    - `{{ red (darken teal 0.5) }}` → `25`
-- `green color` : Gets the green channel of a color.
-    - `{{ green (darken teal 0.5) }}` → `93`
-- `blue color` : Gets the blue channel of a color.
-    - `{{ blue (darken teal 0.5) }}` → `82`
-- `darklight dark light` : Chooses a value depending on the set flavor. Latte is light, while Frappé, Macchiato, and Mocha are all dark.
-    - `{{ darklight "Night", "Day" }}` → `Day` on Latte, `Night` on other flavors.
-
-> [!NOTE]
-> The `red`, `green`, and `blue` helpers exist to fetch their respective color channel from a color that has already been formatted. If you're using a named color object, you can just use `<name>.r`, `<name>.g`, and `<name>.b` directly to achieve the same thing.
+- `trunc number places` : Format a number to a string with a given number of places.
+    - `{{ trunc 3.14159265 2 }}` → `3.14`
+- `lighten color amount` : Lighten a color by a percentage.
+    - `{{ lighten red 0.1 }}` → `f8bacc` / `hsl(343, 81%, 85%)`
+- `darken color amount` : Darken a color by a percentage.
+    - `{{ darken red 0.1 }}` → `ee5c85` / `hsl(343, 81%, 65%)`
+- `mix color_a color_b ratio` : Mix two colors together in a given ratio.
+    - `{{ mix red base 0.3 }}` → `5e4054` (30% red, 70% base)
+- `opacity color amount` : Set the opacity of a color.
+    - `{{ opacity red 0.5 }}` → `hsla(343, 81%, 75%, 0.50)`
+- `unquote value` : Marks a value to be unquoted. Mostly useful for maintaining JSON syntax highlighting in template files when a non-string value is needed.
+    - `{{ unquote isLight true }}` → `true` (the surrounding quotation marks have been removed)
+- `rgb color` : Convert a color to CSS RGB format.
+    - `{{ rgb red }}` → `rgb(243, 139, 168)`
+- `rgba color` : Convert a color to CSS RGBA format.
+    - `{{ rgba (opacity red 0.6) }}` → `rgba(243, 139, 168, 0.60)`
+- `hsl color` : Convert a color to CSS HSL format.
+    - `{{ hsl red }}` → `hsl(343, 81%, 75%)`
+- `hsla color` : Convert a color to CSS HSLA format.
+    - `{{ hsla (opacity red 0.6) }}` → `hsla(343, 81%, 75%, 0.60)`
+- `red_i color` : Get the red channel of a color as an integer from 0 to 255.
+    - `{{ red_i red }}` → `243`
+- `green_i color` : Get the green channel of a color as an integer from 0 to 255.
+    - `{{ green_i red }}` → `139`
+- `blue_i color` : Get the blue channel of a color as an integer from 0 to 255.
+    - `{{ blue_i red }}` → `168`
+- `alpha_i color` : Get the alpha channel of a color as an integer from 0 to 255.
+    - `{{ alpha_i (opacity red 0.6) }}` → `153`
+- `red_f color` : Get the red channel of a color as a float from 0 to 1.
+    - `{{ red_f red }}` → `0.95` (truncated to 2 places)
+- `green_f color` : Get the green channel of a color as a float from 0 to 1.
+    - `{{ green_f red }}` → `0.55` (truncated to 2 places)
+- `blue_f color` : Get the blue channel of a color as a float from 0 to 1.
+    - `{{ blue_f red }}` → `0.66` (truncated to 2 places)
+- `alpha_f color` : Get the alpha channel of a color as a float from 0 to 1.
+    - `{{ alpha_f (opacity red 0.6) }}` → `0.60` (truncated to 2 places)
+- `darklight if-dark if-light` : Choose a value depending on the current flavor. Latte is light, while Frappé, Macchiato, and Mocha are all dark.
+    - `{{ darklight "Night" "Day" }}` → `Day` on Latte, `Night` on other flavors
 
 ## Frontmatter
 
@@ -90,10 +96,10 @@ As a simple example, given the following template (`example.cfg`):
 app: 'Pepperjack'
 author: 'winston'
 ---
-# Catppuccin for {{ app }}
-# by {{ author }}
-bg = '{{ base.hex }}'
-fg = '{{ text.hex }}'
+# Catppuccin for {{app}}
+# by {{author}}
+bg = '{{base.hex}}'
+fg = '{{text.hex}}'
 ```
 
 Running `whiskers example.cfg mocha` produces the following output:
@@ -109,14 +115,14 @@ Values in YAML frontmatter are rendered in the same way as the rest of the templ
 
 ```handlebars
 ---
-accent: '#{{ mauve.hex }}'
-darkGreen: '#{{ darken green.hex 0.3 }}'
+accent: "{{mauve}}"
+darkGreen: "{{darken green 0.3}}"
 ---
-bg = "#{{ base.hex }}"
-fg = "#{{ text.hex }}"
-border = "{{ accent }}"
-diffAddFg = "#{{ green.hex }}"
-diffAddBg = "{{ darkGreen }}"
+bg = "#{{base}}"
+fg = "#{{text}}"
+border = "#{{accent}}"
+diffAddFg = "#{{green}}"
+diffAddBg = "#{{darkGreen}}"
 ```
 
 Rendering the above template produces the following output:
@@ -129,16 +135,10 @@ diffAddFg = "#A6E3A1"
 diffAddBg = "#40B436"
 ```
 
-## Opinions
-
-Any and all feedback is appreciated, especially on the following topics:
-
-- Frontmatter support
-- Available helpers for common port creation needs
-
 ## Wishlist
 
 - Color overrides option for CLI
-    - e.g. `--overrides '{"base": "#000000"}'`
+  - e.g. `--overrides '{"base": "#000000"}'`
+  - #2
 - Combined operation mode, for example setting flavor to `all` and having all four flavors available in the template context.
 - Swap out [`css-colors`](https://github.com/vaidehijoshi/css-colors) colour operations for something else (maybe [`farver`](https://github.com/nyxkrage/farver)), ideally with a better colour model.

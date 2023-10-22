@@ -16,6 +16,7 @@ fn split(template: &str) -> Option<(&str, &str)> {
         .map(|(a, b)| (a.trim(), b.trim()))
 }
 
+#[must_use]
 pub fn render_and_parse<'a>(
     template: &'a str,
     reg: &Handlebars,

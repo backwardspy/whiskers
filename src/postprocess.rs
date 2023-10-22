@@ -15,6 +15,8 @@ impl regex::Replacer for UnquoteReplacer {
     }
 }
 
+#[must_use]
+#[allow(clippy::missing_panics_doc)] // a panic in here means we wrote the regex wrong
 pub fn postprocess(input: &str) -> String {
     let pattern = regex::Regex::new(r#""\{WHISKERS:UNQUOTE:(?<b64>.*)}""#).expect("regex is valid");
     let result = pattern.replace_all(input, UnquoteReplacer).to_string();
