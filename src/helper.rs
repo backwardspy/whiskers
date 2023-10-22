@@ -1,5 +1,5 @@
 use base64::Engine;
-use css_colors::{Color, Ratio};
+use css_colors::{Color, Ratio, HSLA};
 use handlebars::{
     handlebars_helper, Context, Handlebars, Helper, HelperResult, Output, RenderContext,
     RenderError,
@@ -8,67 +8,64 @@ use handlebars::{
 use ::titlecase::titlecase as titlecase_ext;
 use serde_json::Value;
 
-use crate::{format, parse};
+use crate::parse::HSLAExt;
 
-fn format_color_string_with<F>(color_string: &str, formatter: F) -> String
-where
-    F: FnOnce(css_colors::HSLA, format::ColorModel) -> String,
-{
-    color_string.parse::<parse::Color>().map_or_else(
-        |err| {
-            eprintln!("Warning: Failed to parse color string '{color_string}': {err}");
-            color_string.to_string()
-        },
-        |result| match result {
-            parse::Color::Hsl(hsl) => formatter(hsl.to_hsla(), format::ColorModel::Hsl),
-            parse::Color::Hsla(hsla) => formatter(hsla, format::ColorModel::Hsla),
-            parse::Color::Rgb(rgb) => formatter(rgb.to_hsla(), format::ColorModel::Rgb),
-            parse::Color::Rgba(rgba) => formatter(rgba.to_hsla(), format::ColorModel::Rgba),
-            parse::Color::Hex(rgb) => formatter(rgb.to_hsla(), format::ColorModel::Hex),
-            parse::Color::Hexa(rgba) => formatter(rgba.to_hsla(), format::ColorModel::Hexa),
-        },
-    )
-}
-
-fn format_color_string<F>(color_string: &str, formatter: F) -> String
-where
-    F: FnOnce(css_colors::HSLA) -> css_colors::HSLA,
-{
-    format_color_string_with(color_string, |hsla, format| {
-        format::color(formatter(hsla), format)
-    })
+impl From<crate::parse::Error> for RenderError {
+    fn from(value: crate::parse::Error) -> Self {
+        Self::from_error("Failed to parse hex string", value)
+    }
 }
 
 handlebars_helper!(uppercase: |s: String| s.to_uppercase());
 handlebars_helper!(lowercase: |s: String| s.to_lowercase());
 handlebars_helper!(titlecase: |s: String| titlecase_ext(&s));
 handlebars_helper!(lighten: |color: String, weight: f32| {
-    format_color_string(&color, |hsl| hsl.lighten(Ratio::from_f32(weight)))
+    HSLA::from_hex(&color)?.lighten(Ratio::from_f32(weight)).to_hex()
 });
 handlebars_helper!(darken: |color: String, weight: f32| {
-    format_color_string(&color, |hsl| hsl.darken(Ratio::from_f32(weight)))
+    HSLA::from_hex(&color)?.darken(Ratio::from_f32(weight)).to_hex()
 });
-handlebars_helper!(mix: |a: String, b: String, t: f32| {
-    format_color_string_with(&a, |a_hsla, format| {
-        format_color_string_with(&b, |b_hsla, _| {
-            format::color(a_hsla.mix(b_hsla, Ratio::from_f32(t)), format)
-        })
-    })
+handlebars_helper!(mix: |color_a: String, color_b: String, t: f32| {
+    HSLA::from_hex(&color_a)?.mix(HSLA::from_hex(&color_b)?, Ratio::from_f32(t)).to_hex()
 });
 handlebars_helper!(opacity: |color: String, amount: f32| {
-    format_color_string(&color, |hsl| hsl.fade(Ratio::from_f32(amount)))
+    HSLA::from_hex(&color)?.fade(Ratio::from_f32(amount)).to_hex()
 });
-handlebars_helper!(red: |color: String| {
-    let color: parse::Color = color.parse().map_err(|e: color_eyre::Report| RenderError::new(e.to_string()))?;
-    color.red()
+handlebars_helper!(rgb: |color: String| {
+    HSLA::from_hex(&color)?.to_rgb().to_string()
 });
-handlebars_helper!(green: |color: String| {
-    let color: parse::Color = color.parse().map_err(|e: color_eyre::Report| RenderError::new(e.to_string()))?;
-    color.green()
+handlebars_helper!(rgba: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().to_string()
 });
-handlebars_helper!(blue: |color: String| {
-    let color: parse::Color = color.parse().map_err(|e: color_eyre::Report| RenderError::new(e.to_string()))?;
-    color.blue()
+handlebars_helper!(hsl: |color: String| {
+    HSLA::from_hex(&color)?.to_hsl().to_string()
+});
+handlebars_helper!(hsla: |color: String| {
+    HSLA::from_hex(&color)?.to_string()
+});
+handlebars_helper!(red_i: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().r.as_u8()
+});
+handlebars_helper!(green_i: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().g.as_u8()
+});
+handlebars_helper!(blue_i: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().b.as_u8()
+});
+handlebars_helper!(alpha_i: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().a.as_u8()
+});
+handlebars_helper!(red_f: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().r.as_f32()
+});
+handlebars_helper!(green_f: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().g.as_f32()
+});
+handlebars_helper!(blue_f: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().b.as_f32()
+});
+handlebars_helper!(alpha_f: |color: String| {
+    HSLA::from_hex(&color)?.to_rgba().a.as_f32()
 });
 
 pub fn darklight(

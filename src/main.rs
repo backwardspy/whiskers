@@ -1,19 +1,15 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::unwrap_used)]
 #![allow(clippy::cast_possible_truncation)] // we like truncating u32s into u8s around here
-
-mod format;
+mod frontmatter;
 mod helper;
 mod parse;
 mod postprocess;
 mod template;
 
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 use clap::Parser;
 use color_eyre::{eyre::Context, Result};
-use handlebars::Handlebars;
-use serde_json::Value;
-use yaml_front_matter::YamlFrontMatter;
 
 use postprocess::postprocess;
 
@@ -44,49 +40,6 @@ struct Args {
     flavor: Flavor,
 }
 
-type Frontmatter = HashMap<String, String>;
-
-fn try_get_frontmatter(template: &str) -> (String, Option<Frontmatter>) {
-    match YamlFrontMatter::parse::<Frontmatter>(template) {
-        Ok(doc) => (doc.content, Some(doc.metadata)),
-        Err(e) => {
-            eprintln!("Template has no valid frontmatter ({e}).");
-            (template.to_string(), None)
-        }
-    }
-}
-
-fn render_frontmatter(frontmatter: Frontmatter, ctx: &Value, reg: &Handlebars) -> Frontmatter {
-    frontmatter
-        .into_iter()
-        .map(|(k, v)| {
-            (
-                k.clone(),
-                reg.render_template(&v, &ctx).unwrap_or_else(|e| {
-                    eprintln!("Warning: failed to render template for frontmatter key '{k}': {e}");
-                    v
-                }),
-            )
-        })
-        .collect::<Frontmatter>()
-}
-
-fn make_context(
-    flavor: Flavor,
-    reg: &Handlebars,
-    frontmatter: Option<Frontmatter>,
-) -> Result<Value> {
-    let mut ctx = template::make_context(flavor.into())?;
-
-    // render frontmatter values as templates
-    if let Some(frontmatter) = frontmatter {
-        let user_ctx = render_frontmatter(frontmatter, &ctx, reg);
-        ctx = template::merge_user_context(ctx, user_ctx)?;
-    }
-
-    Ok(ctx)
-}
-
 fn main() -> Result<()> {
     color_eyre::config::HookBuilder::default()
         .panic_section("Consider reporting this issue: https://github.com/catppuccin/toolbox")
@@ -107,8 +60,17 @@ fn main() -> Result<()> {
         .and_then(|p| p.to_str())
         .unwrap_or("unnamed template");
 
-    let (content, frontmatter) = try_get_frontmatter(&tpl);
-    let ctx = make_context(args.flavor, &reg, frontmatter)?;
+    let mut ctx = template::make_context(args.flavor.into())?;
+    let (content, frontmatter) = frontmatter::render_and_parse(&tpl, &reg, &ctx);
+    if let Some(frontmatter) = frontmatter {
+        ctx.as_object_mut().expect("ctx is an object value").extend(
+            frontmatter
+                .as_object()
+                .expect("frontmatter is an object value")
+                .clone(),
+        );
+    }
+
     reg.register_template_string(template_name, content)
         .wrap_err("Failed to parse template")?;
     let result = reg
@@ -119,3 +81,4 @@ fn main() -> Result<()> {
 
     Ok(())
 }
+

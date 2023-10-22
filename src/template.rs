@@ -1,25 +1,9 @@
 use std::collections::HashMap;
 
-use color_eyre::{eyre::eyre, Result};
-use css_colors::Color;
+use color_eyre::Result;
 use handlebars::Handlebars;
-use serde::{Deserialize, Serialize};
 
 use crate::helper;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ColorData {
-    name: String,
-    hsl: String,
-    hsla: String,
-    rgb: String,
-    rgba: String,
-    hex: String,
-    hexa: String,
-    r: u8,
-    g: u8,
-    b: u8,
-}
 
 pub fn make_registry() -> Handlebars<'static> {
     let mut reg = Handlebars::new();
@@ -31,9 +15,18 @@ pub fn make_registry() -> Handlebars<'static> {
     reg.register_helper("mix", Box::new(helper::mix));
     reg.register_helper("opacity", Box::new(helper::opacity));
     reg.register_helper("unquote", Box::new(helper::unquote));
-    reg.register_helper("red", Box::new(helper::red));
-    reg.register_helper("green", Box::new(helper::green));
-    reg.register_helper("blue", Box::new(helper::blue));
+    reg.register_helper("rgb", Box::new(helper::rgb));
+    reg.register_helper("rgba", Box::new(helper::rgba));
+    reg.register_helper("hsl", Box::new(helper::hsl));
+    reg.register_helper("hsla", Box::new(helper::hsla));
+    reg.register_helper("red_i", Box::new(helper::red_i));
+    reg.register_helper("green_i", Box::new(helper::green_i));
+    reg.register_helper("blue_i", Box::new(helper::blue_i));
+    reg.register_helper("alpha_i", Box::new(helper::alpha_i));
+    reg.register_helper("red_f", Box::new(helper::red_f));
+    reg.register_helper("green_f", Box::new(helper::green_f));
+    reg.register_helper("blue_f", Box::new(helper::blue_f));
+    reg.register_helper("alpha_f", Box::new(helper::alpha_f));
     reg.register_helper("darklight", Box::new(helper::darklight));
     reg.set_strict_mode(true);
     reg
@@ -42,27 +35,9 @@ pub fn make_registry() -> Handlebars<'static> {
 pub fn make_context(flavor: catppuccin::Flavour) -> Result<serde_json::Value> {
     let colors = flavor.colours();
 
-    let color_map: HashMap<String, ColorData> = colors
+    let color_map: HashMap<String, String> = colors
         .into_fields_iter()
-        .map(|(name, c)| {
-            let rgb: css_colors::RGB = c.into();
-            let hsl: css_colors::HSL = rgb.to_hsl();
-            (
-                name.to_string(),
-                ColorData {
-                    name: name.to_string(),
-                    hsl: hsl.to_string(),
-                    hsla: hsl.to_hsla().to_string(),
-                    rgb: rgb.to_string(),
-                    rgba: rgb.to_rgba().to_string(),
-                    hex: c.hex(),
-                    hexa: format!("{}FF", c.hex()),
-                    r: c.0,
-                    g: c.1,
-                    b: c.2,
-                },
-            )
-        })
+        .map(|(name, c)| (name.to_string(), c.hex().to_ascii_lowercase()))
         .collect();
 
     let mut context = serde_json::to_value(color_map)?;
@@ -73,26 +48,3 @@ pub fn make_context(flavor: catppuccin::Flavour) -> Result<serde_json::Value> {
 
     Ok(context)
 }
-
-pub fn merge_user_context<S>(
-    context: serde_json::Value,
-    user_context: S,
-) -> Result<serde_json::Value>
-where
-    S: Serialize,
-{
-    let mut ctx = serde_json::to_value(context)?
-        .as_object_mut()
-        .ok_or_else(|| eyre!("Internal error: context is not an object"))?
-        .clone();
-
-    let user_ctx = serde_json::to_value(user_context)?
-        .as_object()
-        .ok_or_else(|| eyre!("YAML frontmatter must be a hash at the top-level"))?
-        .clone();
-
-    ctx.extend(user_ctx);
-
-    Ok(serde_json::Value::Object(ctx))
-}
-

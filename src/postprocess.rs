@@ -20,4 +20,3 @@ pub fn postprocess(input: &str) -> String {
     let result = pattern.replace_all(input, UnquoteReplacer).to_string();
     result
 }
-
