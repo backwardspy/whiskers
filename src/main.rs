@@ -1,8 +1,7 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::unwrap_used)]
 #![allow(clippy::cast_possible_truncation)] // we like truncating u32s into u8s around here
-use std::{fs, path::PathBuf};
-
 use clap::Parser;
+use clap_stdin::FileOrStdin;
 use color_eyre::{eyre::Context, Result};
 
 use whiskers::frontmatter;
@@ -30,12 +29,15 @@ impl From<Flavor> for catppuccin::Flavour {
 
 #[derive(clap::Parser, Debug)]
 struct Args {
+    /// Path to the template file to render, or `-` for stdin
     #[arg(required_unless_present = "list_helpers")]
-    template_path: Option<PathBuf>,
+    template: Option<FileOrStdin>,
 
+    /// Flavor to get colors from
     #[arg(value_enum, required_unless_present = "list_helpers")]
     flavor: Option<Flavor>,
 
+    /// List all template helpers in markdown format
     #[arg(short, long)]
     list_helpers: bool,
 }
@@ -53,25 +55,16 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    let template_path = &args
-        .template_path
+    let template = &args
+        .template
         .expect("template_path is guaranteed to be set");
+
     let flavor = args.flavor.expect("flavor is guaranteed to be set");
 
-    let tpl = fs::read_to_string(template_path).wrap_err(format!(
-        "Failed to read template file '{}'",
-        template_path.display()
-    ))?;
-
-    let mut reg = template::make_registry();
-
-    let template_name = template_path
-        .file_name()
-        .and_then(|p| p.to_str())
-        .unwrap_or("unnamed template");
+    let reg = template::make_registry();
 
     let mut ctx = template::make_context(flavor.into());
-    let (content, frontmatter) = frontmatter::render_and_parse(&tpl, &reg, &ctx);
+    let (content, frontmatter) = frontmatter::render_and_parse(template, &reg, &ctx);
     if let Some(frontmatter) = frontmatter {
         ctx.as_object_mut().expect("ctx is an object value").extend(
             frontmatter
@@ -81,10 +74,8 @@ fn main() -> Result<()> {
         );
     }
 
-    reg.register_template_string(template_name, content)
-        .wrap_err("Failed to parse template")?;
     let result = reg
-        .render(template_name, &ctx)
+        .render_template(content, &ctx)
         .wrap_err("Failed to render template")?;
     let result = postprocess(&result);
     println!("{result}");

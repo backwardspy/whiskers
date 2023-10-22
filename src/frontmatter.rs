@@ -36,8 +36,6 @@ pub fn render_and_parse<'a>(
         }
     };
 
-    eprintln!("rendered frontmatter: {frontmatter:?}");
-
     match serde_yaml::from_str(&frontmatter) {
         Ok(frontmatter) => (content, Some(frontmatter)),
         Err(e) => {

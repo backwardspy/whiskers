@@ -9,14 +9,14 @@ Soothing port creation tool for the high-spirited!
 
 ```console
 $ whiskers --help
-Usage: whiskers [OPTIONS] [TEMPLATE_PATH] [FLAVOR]
+Usage: whiskers [OPTIONS] [TEMPLATE] [FLAVOR]
 
 Arguments:
-  [TEMPLATE_PATH]
-  [FLAVOR]         [possible values: latte, frappe, macchiato, mocha]
+  [TEMPLATE]  Path to the template file to render, or `-` for stdin
+  [FLAVOR]    Flavor to get colors from [possible values: latte, frappe, macchiato, mocha]
 
 Options:
-  -l, --list-helpers
+  -l, --list-helpers  List all template helpers in markdown format
   -h, --help          Print help
 ```
 
