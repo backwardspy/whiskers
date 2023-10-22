@@ -137,35 +137,44 @@ diffaddbg = "#40b436"
 
 ## Overrides
 
-whiskers supports overriding individual template values without changing the underlying template source. To use this, pass the `--override` flag to the whiskers CLI. You can use the `--override` flag multiple times to apply multiple overrides.
+Whiskers supports overriding individual template values without changing the underlying template source. To use this feature, pass the `--override` flag to the whiskers CLI. You can use the `--override` flag multiple times to apply multiple overrides.
 
-For example, with this template:
+We'll use the following template for this example:
+
 ```handlebars
 ---
 accent: '{{ mauve }}'
 ---
 bg = "#{{ base }}"
-fg = "#{{ text }}"
-border = "#{{ accent }}"
-diffAddFg = "#{{ green }}"
+fg = "#{{ accent }}"
 ```
-And no overrides passed, we get:
+
+With no overrides passed to whiskers, we get the following output:
+
 ```ini
 bg = "#1e1e2e"
-fg = "#cdd6f4"
-border = "#cba6f7"
-diffAddFg = "#a6e3a1"
+fg = "#cba6f7"
 ```
-However, we can pass overrides through the CLI:
 
-`whiskers --override accent=40b436`
+However, we can pass overrides through the CLI with `--override accent=40b436`. Then, we get:
 
-Then, we get:
 ```ini
 bg = "#1e1e2e"
-fg = "#cdd6f4"
-border = "#40b436"
-diffAddFg = "#a6e3a1"
+fg = "#40b436"
+```
+
+We can also override with another value from the [template context](context-variables), for example `--override accent=sky`. This gives the following result:
+
+```ini
+bg = "#1e1e2e"
+fg = "#89dceb"
+```
+
+Finally, we can override both values by passing two overrides. If we invoke whiskers with `--override accent=yellow --override base=000000` then we get this output:
+
+```ini
+bg = "#000000"
+fg = "#f9e2af"
 ```
 
 ## Wishlist
