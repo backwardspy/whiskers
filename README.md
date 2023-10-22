@@ -98,8 +98,8 @@ author: 'winston'
 ---
 # Catppuccin for {{app}}
 # by {{author}}
-bg = '{{base.hex}}'
-fg = '{{text.hex}}'
+bg = '{{base}}'
+fg = '{{text}}'
 ```
 
 Running `whiskers example.cfg mocha` produces the following output:
@@ -107,8 +107,8 @@ Running `whiskers example.cfg mocha` produces the following output:
 ```ini
 # Catppuccin for Pepperjack
 # by winston
-bg = '1E1E2E'
-fg = 'CDD6F4'
+bg = '1e1e2e'
+fg = 'cdd6f4'
 ```
 
 Values in YAML frontmatter are rendered in the same way as the rest of the template, which means you can also make use of context variables in your frontmatter. This can be useful for things like setting an accent color:
@@ -128,11 +128,11 @@ diffAddBg = "#{{darkGreen}}"
 Rendering the above template produces the following output:
 
 ```ini
-bg = "#1E1E2E"
-fg = "#CDD6F4"
-border = "#CBA6F7"
-diffAddFg = "#A6E3A1"
-diffAddBg = "#40B436"
+bg = "#1e1e2e"
+fg = "#cdd6f4"
+border = "#cba6f7"
+diffaddfg = "#a6e3a1"
+diffaddbg = "#40b436"
 ```
 
 ## Wishlist
