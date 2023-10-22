@@ -1,5 +1,8 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::unwrap_used)]
-#![allow(clippy::cast_possible_truncation)] // we like truncating u32s into u8s around here
+#![allow(clippy::cast_possible_truncation)]
+use std::clone::Clone;
+
+// we like truncating u32s into u8s around here
 use clap::Parser;
 use clap_stdin::FileOrStdin;
 use color_eyre::{
@@ -33,7 +36,7 @@ impl From<Flavor> for catppuccin::Flavour {
 #[derive(Clone, Debug)]
 struct Override {
     pub key: String,
-    pub value: String,
+    pub value: serde_json::Value,
 }
 
 fn parse_override(s: &str) -> Result<Override> {
@@ -41,7 +44,7 @@ fn parse_override(s: &str) -> Result<Override> {
     if let Some((key, value)) = kvpair {
         return Ok(Override {
             key: key.trim().to_string(),
-            value: value.trim().parse()?,
+            value: serde_json::Value::String(value.trim().to_owned()),
         });
     }
     Err(eyre!("invalid override, expected 'key=value', got '{}'", s))
@@ -66,11 +69,46 @@ struct Args {
     list_helpers: bool,
 }
 
-fn overrides_to_map(overrides: &[Override]) -> serde_json::Map<String, serde_json::Value> {
+fn contextualize_overrides(overrides: Vec<Override>, ctx: &serde_json::Value) -> Vec<Override> {
+    let map = ctx.as_object().expect("base context is an object value");
     overrides
-        .iter()
-        .map(|o| (o.key.clone(), serde_json::Value::String(o.value.clone())))
+        .into_iter()
+        .map(|o| {
+            let lookup = o.value.as_str().expect("override values are strings");
+            let value = map.get(lookup).map(Clone::clone).unwrap_or(o.value);
+            Override { key: o.key, value }
+        })
         .collect()
+}
+
+fn overrides_to_map(overrides: Vec<Override>) -> serde_json::Map<String, serde_json::Value> {
+    overrides.into_iter().map(|o| (o.key, o.value)).collect()
+}
+
+fn merge_contexts(
+    ctx: serde_json::Value,
+    frontmatter: Option<serde_json::Value>,
+    overrides: Vec<Override>,
+) -> serde_json::Value {
+    type Map = serde_json::Map<String, serde_json::Value>;
+    let mut merged = Map::new();
+
+    let overrides = contextualize_overrides(overrides, &ctx);
+
+    merged.extend(
+        serde_json::from_value::<Map>(ctx).expect("base context is deserializable into a map"),
+    );
+
+    if let Some(frontmatter) = frontmatter {
+        merged.extend(
+            serde_json::from_value::<Map>(frontmatter)
+                .expect("frontmatter is deserializable into a map"),
+        );
+    }
+
+    merged.extend(overrides_to_map(overrides));
+
+    serde_json::Value::Object(merged)
 }
 
 fn main() -> Result<()> {
@@ -94,18 +132,10 @@ fn main() -> Result<()> {
 
     let reg = template::make_registry();
 
-    let mut ctx = template::make_context(flavor.into());
+    let ctx = template::make_context(flavor.into());
     let (content, frontmatter) = frontmatter::render_and_parse(template, &reg, &ctx);
-    if let Some(frontmatter) = frontmatter {
-        let ctx = ctx.as_object_mut().expect("ctx is an object value");
-        ctx.extend(
-            frontmatter
-                .as_object()
-                .expect("frontmatter is an object value")
-                .clone(),
-        );
-        ctx.extend(overrides_to_map(&args.overrides));
-    }
+
+    let ctx = merge_contexts(ctx, frontmatter, args.overrides);
 
     let result = reg
         .render_template(content, &ctx)

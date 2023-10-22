@@ -1,3 +1,23 @@
+## [0.5.0] - 2023-10-22
+
+### <!-- 0 -->✨ Features
+
+- Improve error reporting
+- Nix flake (#1)
+- Use helpers for colour format conversion
+- Keep helpers in a documented list
+- Add ability to render templates from stdin
+- Implement override support
+- Allow overrides to use context variables
+
+### <!-- 2 -->📚 Documentation
+
+- Fix outdated template examples in the readme
+
+### <!-- 4 -->🚜 Refactor
+
+- Rename override_parser to parse_override
+
 ## [0.4.0] - 2023-10-21
 
 ### <!-- 0 -->✨ Features
@@ -41,4 +61,3 @@
 ### <!-- 8 -->🚧 CI
 
 - Add distribution workflow
-

@@ -31,7 +31,7 @@ impl HSLAExt for HSLA {
         }
 
         let components = hex_to_u8s(hex).map_err(Error::ParseInt)?;
-        let [red, green, blue] = components[..3]
+        let [red, green, blue]: [u8; 3] = components[..3]
             .try_into()
             .expect("guaranteed to have at least 3 elements");
         let alpha = components.get(3).copied().unwrap_or(255);
