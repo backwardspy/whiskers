@@ -1,10 +1,5 @@
 # whiskers
 
-> [!WARNING]
-> This tool is a work-in-progress. I would not recommend using it yet as things may change.
-
-Soothing port creation tool for the high-spirited!
-
 ## Usage
 
 ```console
@@ -41,49 +36,49 @@ The following variables are available for use in your templates:
 The following custom helpers are available:
 
 - `uppercase string` : Convert a string to uppercase.
-    - `{{ uppercase "hello" }}` → `HELLO`
+  - `{{ uppercase "hello" }}` → `HELLO`
 - `lowercase string` : Convert a string to lowercase.
-    - `{{ lowercase "HELLO" }}` → `hello`
+  - `{{ lowercase "HELLO" }}` → `hello`
 - `titlecase string` : Convert a string to titlecase.
-    - `{{ titlecase "hello there" }}` → `Hello There`
+  - `{{ titlecase "hello there" }}` → `Hello There`
 - `trunc number places` : Format a number to a string with a given number of places.
-    - `{{ trunc 3.14159265 2 }}` → `3.14`
+  - `{{ trunc 3.14159265 2 }}` → `3.14`
 - `lighten color amount` : Lighten a color by a percentage.
-    - `{{ lighten red 0.1 }}` → `f8bacc` / `hsl(343, 81%, 85%)`
+  - `{{ lighten red 0.1 }}` → `f8bacc` / `hsl(343, 81%, 85%)`
 - `darken color amount` : Darken a color by a percentage.
-    - `{{ darken red 0.1 }}` → `ee5c85` / `hsl(343, 81%, 65%)`
+  - `{{ darken red 0.1 }}` → `ee5c85` / `hsl(343, 81%, 65%)`
 - `mix color_a color_b ratio` : Mix two colors together in a given ratio.
-    - `{{ mix red base 0.3 }}` → `5e4054` (30% red, 70% base)
+  - `{{ mix red base 0.3 }}` → `5e4054` (30% red, 70% base)
 - `opacity color amount` : Set the opacity of a color.
-    - `{{ opacity red 0.5 }}` → `hsla(343, 81%, 75%, 0.50)`
+  - `{{ opacity red 0.5 }}` → `hsla(343, 81%, 75%, 0.50)`
 - `unquote value` : Marks a value to be unquoted. Mostly useful for maintaining JSON syntax highlighting in template files when a non-string value is needed.
-    - `{{ unquote isLight true }}` → `true` (the surrounding quotation marks have been removed)
+  - `{{ unquote isLight true }}` → `true` (the surrounding quotation marks have been removed)
 - `rgb color` : Convert a color to CSS RGB format.
-    - `{{ rgb red }}` → `rgb(243, 139, 168)`
+  - `{{ rgb red }}` → `rgb(243, 139, 168)`
 - `rgba color` : Convert a color to CSS RGBA format.
-    - `{{ rgba (opacity red 0.6) }}` → `rgba(243, 139, 168, 0.60)`
+  - `{{ rgba (opacity red 0.6) }}` → `rgba(243, 139, 168, 0.60)`
 - `hsl color` : Convert a color to CSS HSL format.
-    - `{{ hsl red }}` → `hsl(343, 81%, 75%)`
+  - `{{ hsl red }}` → `hsl(343, 81%, 75%)`
 - `hsla color` : Convert a color to CSS HSLA format.
-    - `{{ hsla (opacity red 0.6) }}` → `hsla(343, 81%, 75%, 0.60)`
+  - `{{ hsla (opacity red 0.6) }}` → `hsla(343, 81%, 75%, 0.60)`
 - `red_i color` : Get the red channel of a color as an integer from 0 to 255.
-    - `{{ red_i red }}` → `243`
+  - `{{ red_i red }}` → `243`
 - `green_i color` : Get the green channel of a color as an integer from 0 to 255.
-    - `{{ green_i red }}` → `139`
+  - `{{ green_i red }}` → `139`
 - `blue_i color` : Get the blue channel of a color as an integer from 0 to 255.
-    - `{{ blue_i red }}` → `168`
+  - `{{ blue_i red }}` → `168`
 - `alpha_i color` : Get the alpha channel of a color as an integer from 0 to 255.
-    - `{{ alpha_i (opacity red 0.6) }}` → `153`
+  - `{{ alpha_i (opacity red 0.6) }}` → `153`
 - `red_f color` : Get the red channel of a color as a float from 0 to 1.
-    - `{{ red_f red }}` → `0.95` (truncated to 2 places)
+  - `{{ red_f red }}` → `0.95` (truncated to 2 places)
 - `green_f color` : Get the green channel of a color as a float from 0 to 1.
-    - `{{ green_f red }}` → `0.55` (truncated to 2 places)
+  - `{{ green_f red }}` → `0.55` (truncated to 2 places)
 - `blue_f color` : Get the blue channel of a color as a float from 0 to 1.
-    - `{{ blue_f red }}` → `0.66` (truncated to 2 places)
+  - `{{ blue_f red }}` → `0.66` (truncated to 2 places)
 - `alpha_f color` : Get the alpha channel of a color as a float from 0 to 1.
-    - `{{ alpha_f (opacity red 0.6) }}` → `0.60` (truncated to 2 places)
+  - `{{ alpha_f (opacity red 0.6) }}` → `0.60` (truncated to 2 places)
 - `darklight if-dark if-light` : Choose a value depending on the current flavor. Latte is light, while Frappé, Macchiato, and Mocha are all dark.
-    - `{{ darklight "Night" "Day" }}` → `Day` on Latte, `Night` on other flavors
+  - `{{ darklight "Night" "Day" }}` → `Day` on Latte, `Night` on other flavors
 
 ## Frontmatter
 
@@ -92,14 +87,11 @@ You can include additional context variables in the templating process by adding
 As a simple example, given the following template (`example.cfg`):
 
 ```handlebars
----
-app: 'Pepperjack'
-author: 'winston'
----
-# Catppuccin for {{app}}
-# by {{author}}
-bg = '{{base}}'
-fg = '{{text}}'
+--- app: 'Pepperjack' author: 'winston' --- # Catppuccin for
+{{app}}
+# by
+{{author}}
+bg = '{{base}}' fg = '{{text}}'
 ```
 
 Running `whiskers example.cfg mocha` produces the following output:
@@ -114,15 +106,8 @@ fg = 'cdd6f4'
 Values in YAML frontmatter are rendered in the same way as the rest of the template, which means you can also make use of context variables in your frontmatter. This can be useful for things like setting an accent color:
 
 ```handlebars
----
-accent: "{{mauve}}"
-darkGreen: "{{darken green 0.3}}"
----
-bg = "#{{base}}"
-fg = "#{{text}}"
-border = "#{{accent}}"
-diffAddFg = "#{{green}}"
-diffAddBg = "#{{darkGreen}}"
+--- accent: "{{mauve}}" darkGreen: "{{darken green 0.3}}" --- bg = "#{{base}}"
+fg = "#{{text}}" border = "#{{accent}}" diffAddFg = "#{{green}}" diffAddBg = "#{{darkGreen}}"
 ```
 
 Rendering the above template produces the following output:
@@ -142,11 +127,7 @@ Whiskers supports overriding individual template values without changing the und
 We'll use the following template for this example:
 
 ```handlebars
----
-accent: '{{ mauve }}'
----
-bg = "#{{ base }}"
-fg = "#{{ accent }}"
+--- accent: '{{mauve}}' --- bg = "#{{base}}" fg = "#{{accent}}"
 ```
 
 With no overrides passed to whiskers, we get the following output:
