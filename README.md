@@ -1,5 +1,8 @@
 # whiskers
 
+> [!IMPORTANT]
+> Project has moved to [catppuccin/toolbox](https://github.com/catppuccin/toolbox/tree/main/whiskers)
+
 ## Usage
 
 ```console
